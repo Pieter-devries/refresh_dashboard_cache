@@ -1,10 +1,12 @@
 #!/usr/bin/python3.8
 
 import time
+import re
 import looker_sdk
 from looker_sdk import models as mdls
 from looker_sdk.error import SDKError
 import urllib3
+
 urllib3.disable_warnings()
 
 
@@ -89,6 +91,7 @@ def filtered_query(query, filters, dashboard_filters):
         ))
     return new_query
 
+
 def unfiltered_query(query):
     new_query = sdk.create_query(
         body=mdls.WriteQuery(
@@ -109,6 +112,7 @@ def unfiltered_query(query):
         ))
     return new_query
 
+
 def extract_query_filter(query):
     if type(query) == tuple:
         query_id, filters = query
@@ -117,31 +121,33 @@ def extract_query_filter(query):
         query_id = query
         return query_id, None
 
+
 def check_status(task_id):
-  info = sdk.query_task(query_task_id=task_id)
-  status = info['status']
-  return status
+    info = sdk.query_task(query_task_id=task_id)
+    status = info['status']
+    return status
 
 
 def async_query(new_queries):
     for nq in new_queries:
-      async_query = sdk.create_query_task(
-        body=mdls.WriteCreateQueryTask(
-            query_id=nq,
-            result_format=mdls.ResultFormat.json_fe,
-            deferred=False
-        ),
-        cache=False,
-        force_production=True)
-      query_id = async_query['query_id']
-      task_id = async_query['id']
-      status = check_status(task_id)
-      while status == 'running':
-        print(query_id, status)
-        time.sleep(5)
+        async_query = sdk.create_query_task(
+            body=mdls.WriteCreateQueryTask(
+                query_id=nq,
+                result_format=mdls.ResultFormat.json_fe,
+                deferred=False
+            ),
+            cache=False,
+            force_production=True)
+        query_id = async_query['query_id']
+        task_id = async_query['id']
         status = check_status(task_id)
-      results = sdk.query_task_results(query_task_id=task_id)
-      print(query_id, status, results)
+        while status == 'running':
+            print(query_id, status)
+            time.sleep(5)
+            status = check_status(task_id)
+        results = sdk.query_task_results(query_task_id=task_id)
+        print(query_id, status)
+
 
 if __name__ == '__main__':
     sdk = looker_sdk.init40()
@@ -151,5 +157,3 @@ if __name__ == '__main__':
     print(f"New queries = {new_queries}")
     print(f"Old queries = {old_queries}")
     async_query(new_queries)
-
-
