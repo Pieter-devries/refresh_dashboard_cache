@@ -66,11 +66,14 @@ def create_queries(query_tiles, dashboard_filters):
 
 
 def filtered_query(query, filters, dashboard_filters):
-    db_filter_list = list(dashboard_filters)
-    for field, value in dashboard_filters:
+    filter_string = ""
+    for idx, filter in enumerate(dashboard_filters, 1):
+        field, value = filter
+        print(idx, field, value)
         if field in filters:
-            field1 = field
-            value1 = value
+            globals()[f"field_{idx}"] = field
+            globals()[f"value_{idx}"] = value
+
     new_query = sdk.create_query(
         body=mdls.WriteQuery(
             model=query['model'],
@@ -79,7 +82,10 @@ def filtered_query(query, filters, dashboard_filters):
             pivots=query['pivots'],
             filter_expression=query['filter_expression'],
             fill_fields=query['fill_fields'],
-            filters={f"{field1}": f"{value1}"},
+            filters={
+                    field_1 : value_1,
+                    field_2 : value_2
+            },
             sorts=query['sorts'],
             limit=query['limit'],
             column_limit=query['column_limit'],
