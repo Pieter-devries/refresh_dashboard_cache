@@ -70,7 +70,7 @@ def filtered_query(query, filters, dashboard_filters):
     for idx, filter in enumerate(dashboard_filters, 1):
         field, value = filter
         # print(idx, field, value)
-        if field in filters
+        if field in filters:
             globals()[f"field_{idx}"] = field
             globals()[f"value_{idx}"] = value
 
